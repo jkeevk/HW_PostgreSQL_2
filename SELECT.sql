@@ -19,8 +19,8 @@ SELECT name
 
 SELECT title
   FROM track
- WHERE title LIKE '%my%' 
-    OR title LIKE '%мой%';
+ WHERE title LIKE '% my %' 
+    OR title LIKE '% мой %';
 
 /* Задание номер 3*/
 
