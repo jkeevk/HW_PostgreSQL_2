@@ -7,7 +7,7 @@ SELECT title, duration
 
 SELECT title
   FROM track
- WHERE duration > 210;
+ WHERE duration >= 210;
 
 SELECT title
   FROM collection
@@ -19,8 +19,14 @@ SELECT name
 
 SELECT title
   FROM track
- WHERE title LIKE '% my %' 
-    OR title LIKE '% мой %';
+ WHERE title ILIKE 'my %' 
+    OR title ILIKE '% my'
+    OR title ILIKE '% my %'
+    OR title ILIKE 'my'
+    OR title ILIKE 'мой %'
+    OR title ILIKE '% мой'
+    OR title ILIKE '% мой %'
+    OR title ILIKE 'мой';
 
 /* Задание номер 3*/
 
@@ -32,12 +38,11 @@ SELECT title AS genre, COUNT(DISTINCT name)
        ON musiciant.musiciant_id = musiciants_to_genres.musiciant_id
        GROUP BY title;
 
-SELECT release_year, COUNT(track.title)
+SELECT COUNT(track.track_id)
   FROM track
        JOIN album 
        ON track.album_id = album.album_id
-	     GROUP BY release_year 
-	     HAVING release_year BETWEEN 2019 AND 2020;
+	     WHERE release_year BETWEEN 2019 AND 2020;
 
 SELECT album.title AS album, ROUND(AVG(duration), 2) AS average
   FROM track
@@ -46,13 +51,17 @@ SELECT album.title AS album, ROUND(AVG(duration), 2) AS average
 	     GROUP BY album.title
 	     ORDER BY average;
 
-SELECT DISTINCT name AS musiciant
-  FROM album
-       JOIN musiciants_to_albums 
-       ON album.album_id = musiciants_to_albums.album_id
-       JOIN musiciant 
+SELECT musiciant.name AS musiciant
+  FROM musiciant
+ WHERE musiciant.name NOT IN (
+       SELECT musiciant.name
+       FROM musiciant
+		   JOIN musiciants_to_albums
        ON musiciant.musiciant_id = musiciants_to_albums.musiciant_id
-	     WHERE release_year <> 2020;
+       JOIN album
+       ON musiciants_to_albums.album_id = album.album_id
+	     WHERE album.release_year = 2020
+ );
 
 SELECT collection.title
   FROM collection
@@ -103,12 +112,12 @@ SELECT musiciant.name
 
 SELECT album.title
   FROM track
-       RIGHT JOIN album 
+       JOIN album 
        ON album.album_id = track.album_id
-		   GROUP BY album.title
-		   HAVING COUNT(track.title) = (SELECT MIN(count) 
-              FROM (SELECT COUNT(track2.title) AS count 
-              FROM track track2 RIGHT JOIN album album2 
-              ON album2.album_id = track2.album_id 
-              GROUP BY album2.title)
-              );
+		   GROUP BY album.album_id
+		   HAVING COUNT(track.title) = (
+              SELECT COUNT(track.track_id) FROM track
+              GROUP BY track.album_id
+              ORDER BY 1
+              LIMIT 1
+);
